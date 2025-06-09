@@ -1,0 +1,31 @@
+body {
+    display: flex;
+}
+
+.board {
+    width: 50%;
+    margin: 10px;
+}
+
+.cell {
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+    width: 30px;
+    height: 30px;
+}
+
+.cell:first-child {
+    border-left: 1px solid black;
+}
+
+.row {
+    display: flex;
+}
+
+.row:first-child > .cell {
+    border-top: 1px solid black;
+}
+
+.asd {
+    background-color: rgb(29, 180, 255);
+}
