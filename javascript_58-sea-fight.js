@@ -8,7 +8,19 @@ document.addEventListener("DOMContentLoaded", function() {
     let lockColStart = -1;
     let lockRowEnd = -1;
     let lockRowStart = -1;
+    let shipLimits = {
+        1: 4,
+        2: 3,
+        3: 2,
+        4: 1
+    };
 
+    let standingShips = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0
+    };
     for (let i = 0; i < 10; i++) {
         let row = document.createElement("div");
         row.classList.add("row");
@@ -17,7 +29,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         for (let j = 0; j < 10; j++) {
             let cell = document.createElement("div");
-
             cell.classList.add("cell");
             cell.dataset.rowIndex = i;
             cell.dataset.colIndex = j;
@@ -45,6 +56,13 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (firstRow == secondRow) {
                             let start = Math.min(firstCol, secondCol); //6, 3
                             let end = Math.max(firstCol, secondCol);//3, 6
+                            let length = end - start + 1;
+
+                            if (standingShips[length] >= shipLimits[length]) {
+                                alert("цей тип корабля вже поставлен максимальну кількість");
+                                return;
+                            }
+
                             if (end - start < 4) {
                                 if (end != 9) {
                                     lockColEnd = end + 1;
@@ -69,11 +87,18 @@ document.addEventListener("DOMContentLoaded", function() {
                                         playerBoardMatrix[firstRow + 1][col].dataset.lock = true;
                                     }
                                 }
+                                standingShips[length]++;
                             }
                         }
                         else if (firstCol == secondCol) {
                             let start = Math.min(firstRow, secondRow);
                             let end = Math.max(firstRow, secondRow);
+                            let length = end - start + 1;
+
+                            if (standingShips[length] >= shipLimits[length]) {
+                                alert("цей тип корабля вже поставлен максимальну кількість");
+                                return;
+                            }
                             if (end - start < 4) {
                                 if (end != 9) {
                                     lockRowEnd = end + 1;
@@ -93,10 +118,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                     if (firstCol != 0) {
                                         playerBoardMatrix[row][firstCol - 1].dataset.lock = true;
                                     }
-                                    if (firstRow != 9) {
+                                    if (firstCol != 9) {
                                         playerBoardMatrix[row][firstCol + 1].dataset.lock = true;
                                     }
                                 }
+                                standingShips[length]++;
                             }
                         }
                         saveFirstCell = 0;
@@ -104,7 +130,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         saveFirstCell.classList.remove("firstColor");
                         alert("лінія має буть тільки вертикальна або горизонтальна");
                         saveFirstCell = 0;
-                        // return;
                     }
                 }
             });
