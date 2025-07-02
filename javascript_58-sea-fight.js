@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let saveFirstCell = 0;
     let lockColEnd = -1;
     let lockColStart = -1;
+    let lockRowEnd = -1;
+    let lockRowStart = -1;
 
     for (let i = 0; i < 10; i++) {
         let row = document.createElement("div");
@@ -23,8 +25,13 @@ document.addEventListener("DOMContentLoaded", function() {
             cellArray[j] = cell;
 
             cell.addEventListener("click", function() {
+                if (this.dataset.lock == "true") {
+                    console.log("false");
+                    return;
+                }
                 console.log(this.dataset.rowIndex, this.dataset.colIndex);
                 if (saveFirstCell == 0) {
+                    this.classList.add("firstColor");
                     saveFirstCell = this;
                 } else {
                     let firstRow = Number(saveFirstCell.dataset.rowIndex);
@@ -34,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     if (firstRow == secondRow || firstCol == secondCol) {
                         console.log("OK");
-
+                        saveFirstCell.classList.remove("firstColor");
                         if (firstRow == secondRow) {
                             let start = Math.min(firstCol, secondCol); //6, 3
                             let end = Math.max(firstCol, secondCol);//3, 6
@@ -44,7 +51,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 } else {
                                     lockColEnd = end;
                                 }
-
                                 if (start != 0) {
                                     lockColStart = start - 1;
                                 } else {
@@ -52,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 }
 
                                 for (let col = start; col <= end; col++) {
-                                    playerBoardMatrix[firstRow][col].classList.add("asd");
+                                    playerBoardMatrix[firstRow][col].classList.add("color");
                                 }
                                 for (let col = lockColStart; col <= lockColEnd; col++) {
                                     playerBoardMatrix[firstRow][col].dataset.lock = true;
@@ -69,13 +75,33 @@ document.addEventListener("DOMContentLoaded", function() {
                             let start = Math.min(firstRow, secondRow);
                             let end = Math.max(firstRow, secondRow);
                             if (end - start < 4) {
+                                if (end != 9) {
+                                    lockRowEnd = end + 1;
+                                } else {
+                                    lockRowEnd = end;
+                                }
+                                if (start != 0) {
+                                    lockRowStart = start - 1;
+                                } else {
+                                    lockRowStart = start;
+                                }
                                 for (let row = start; row <= end; row++) {
-                                    playerBoardMatrix[row][firstCol].classList.add("asd");
+                                    playerBoardMatrix[row][firstCol].classList.add("color");
+                                }
+                                for (let row = lockRowStart; row <= lockRowEnd; row++) {
+                                    playerBoardMatrix[row][firstCol].dataset.lock = true;
+                                    if (firstCol != 0) {
+                                        playerBoardMatrix[row][firstCol - 1].dataset.lock = true;
+                                    }
+                                    if (firstRow != 9) {
+                                        playerBoardMatrix[row][firstCol + 1].dataset.lock = true;
+                                    }
                                 }
                             }
                         }
                         saveFirstCell = 0;
                     } else {
+                        saveFirstCell.classList.remove("firstColor");
                         alert("лінія має буть тільки вертикальна або горизонтальна");
                         saveFirstCell = 0;
                         // return;
