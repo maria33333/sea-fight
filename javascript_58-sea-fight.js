@@ -208,13 +208,28 @@ document.addEventListener("DOMContentLoaded", function() {
     function spawnThreeDeckShip(startPosition) {
         console.log("spawnThreeShip");
 
-        let directions = [];
+        let directions = [1, -1, 10, -10];
         let limiter = 0;
         let spawnCheck = false
 
+        while(!spawnCheck && directions.length > 0 && limiter < 200) {
+            let randomDirIndex = Math.floor(Math.random() * (directions.length - 1));
+            let dir = directions[randomDirIndex];
 
+            let second = startPosition + dir;
+            let third = startPosition + dir * 2;
+
+            if (freeCells[second] != undefined && freeCells[second][2] != -1 && freeCells[third] != undefined && freeCells[third][2] != -1 && freeCells[startPosition][2] != -1) {
+                spawnOneDeckShip(startPosition);
+                spawnOneDeckShip(second);
+                spawnOneDeckShip(third);
+                spawnCheck = true;
+            } else {
+                directions.splice(randomDirIndex, 1);
+            }
+            limiter++;
+        }
         return spawnCheck;
-
     }
     function spawnTwoDeckShip(startPosition) {
         let directions = [1, -1, 10, -10];
@@ -223,15 +238,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
         while(!spawnCheck && directions.length > 0 && limiter < 200) {
             let randomDirIndex = Math.floor(Math.random() * (directions.length - 1));
-            let endPosition = startPosition + directions[randomDirIndex];
+            let dir = directions[randomDirIndex];
 
-            if (freeCells[endPosition] != undefined && freeCells[endPosition][2] != -1) {
-                spawnOneDeckShip(endPosition);
-                spawnCheck = true;
+            if (dir === 1 && freeCells[startPosition][1] === 9 || dir === -1 && freeCells[startPosition][1] === 0) {
+                directions.splice(randomDirIndex, 1);
             } else {
-                directions.slice(randomDirIndex, 1);
+                let endPosition = startPosition + directions[randomDirIndex];
+                if (freeCells[endPosition] != undefined && freeCells[endPosition][2] != -1) {
+                    spawnOneDeckShip(endPosition);
+                    spawnCheck = true;
+                } else {
+                    directions.splice(randomDirIndex, 1);
+                }
+                limiter++;
             }
-            limiter++;
         }
 
         if (spawnCheck) {
