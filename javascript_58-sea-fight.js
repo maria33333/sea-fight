@@ -22,7 +22,8 @@ document.addEventListener("DOMContentLoaded", function() {
         3: 0,
         4: 0
     };
-    let limiter = 0;
+    let enemyShipCountGlobal = 0;
+    let playerShipCountGlobal = 0;
 
     for (let i = 0; i < 10; i++) {
         let row = document.createElement("div");
@@ -91,6 +92,8 @@ document.addEventListener("DOMContentLoaded", function() {
                                     }
                                 }
                                 standingShips[length]++;
+                                playerShipCountGlobal++;
+                                console.log(playerShipCountGlobal);
                             }
                         }
                         else if (firstCol == secondCol) {
@@ -126,6 +129,8 @@ document.addEventListener("DOMContentLoaded", function() {
                                     }
                                 }
                                 standingShips[length]++;
+                                playerShipCountGlobal++;
+                                console.log(playerShipCountGlobal);
                             }
                         }
                         saveFirstCell = 0;
@@ -137,13 +142,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
         }
-        playerBoardMatrix[i] = cellArray
+        playerBoardMatrix[i] = cellArray;
     }
     console.log(playerBoardMatrix);
 
     let freeCells = [];
     let index = 0;
-
     for (let i = 0; i < 10; i++) {
         let row = document.createElement("div");
         row.classList.add("row");
@@ -151,6 +155,13 @@ document.addEventListener("DOMContentLoaded", function() {
         cellArray = [];
         for (let j = 0; j < 10; j++) {
             let cell = document.createElement("div");
+            cell.addEventListener("click", function() {
+                if (enemyShipCountGlobal == 10 && playerShipCountGlobal == 10) {
+                    console.log("ready");
+                } else {
+                    console.log("dont ready");
+                }
+            });
             cell.classList.add("cell");
             row.append(cell);
             cellArray[j] = cell;
@@ -164,9 +175,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function spawnEnemyShips(shipCount, shipType) {
         let limiter = 0;
-        let enemyShipCount = 0;
         let randomIndex = -1;
         let increaseCount = false;
+        let enemyShipCount = 0;
 
         while(enemyShipCount < shipCount && limiter < 200) {
             randomIndex = Math.floor(Math.random() * (freeCells.length - 1));
@@ -184,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         increaseCount = spawnThreeDeckShip(randomIndex);
                         break;
                     case 4:
-                        spawnFourDeckShip();
+                        increaseCount = spawnFourDeckShip(randomIndex);
                         break;
                     default:
                         console.log("Unrecognized ship type");
@@ -197,35 +208,83 @@ document.addEventListener("DOMContentLoaded", function() {
 
             limiter++;
         }
+        enemyShipCountGlobal += enemyShipCount;
     }
 
     function takePosition(positionIndex) {
-        enemyBoardMatrix[freeCells[positionIndex][0]][freeCells[positionIndex][1]].classList.add("color");
+        // enemyBoardMatrix[freeCells[positionIndex][0]][freeCells[positionIndex][1]].classList.add("color");
         freeCells[positionIndex][2] = -1;
     }
 
-    function spawnFourDeckShip() { console.log("spawnFourShip"); }
-    function spawnThreeDeckShip(startPosition) {
-        console.log("spawnThreeShip");
-
+    function spawnFourDeckShip(startPosition) {
+        console.log("spawnFourShip");
         let directions = [1, -1, 10, -10];
         let limiter = 0;
-        let spawnCheck = false
+        let spawnCheck = false;
 
         while(!spawnCheck && directions.length > 0 && limiter < 200) {
             let randomDirIndex = Math.floor(Math.random() * (directions.length - 1));
             let dir = directions[randomDirIndex];
+            let second = startPosition + dir;
+            let third = startPosition + dir * 2;
+            let four = startPosition + dir + dir * 2;
 
+            let spawnPositions = [startPosition, second, third, four];
+
+            // TODO move to separate function and call for spawnThreeDeckShip too
+            for(let i = 0; i < spawnPositions.length; i++) {
+                if (i != spawnPositions.length - 1 && dir === 1 && freeCells[spawnPositions[i]][1] === 9 || dir === -1 && freeCells[spawnPositions[i]][1] === 0) {
+                    directions.splice(randomDirIndex, 1);
+                    spawnCheck = false;
+                    break;
+                } else {
+                    if (freeCells[spawnPositions[i]] != undefined && freeCells[spawnPositions[i]][2] != -1) {
+                        spawnCheck = true;
+                    } else {
+                        directions.splice(randomDirIndex, 1);
+                        spawnCheck = false;
+                        break;
+                    }
+                }
+            }
+            if (spawnCheck) {
+                spawnPositions.forEach(function(p) { spawnOneDeckShip(p); })
+            }
+            limiter++;
+        }
+        return spawnCheck;
+    }
+    function spawnThreeDeckShip(startPosition) {
+        let directions = [1, -1, 10, -10];
+        let limiter = 0;
+        let spawnCheck = false;
+
+        while(!spawnCheck && directions.length > 0 && limiter < 200) {
+            let randomDirIndex = Math.floor(Math.random() * (directions.length - 1));
+            let dir = directions[randomDirIndex];
             let second = startPosition + dir;
             let third = startPosition + dir * 2;
 
-            if (freeCells[second] != undefined && freeCells[second][2] != -1 && freeCells[third] != undefined && freeCells[third][2] != -1 && freeCells[startPosition][2] != -1) {
-                spawnOneDeckShip(startPosition);
-                spawnOneDeckShip(second);
-                spawnOneDeckShip(third);
-                spawnCheck = true;
-            } else {
-                directions.splice(randomDirIndex, 1);
+            let spawnPositions = [startPosition, second, third];
+
+            for(let i = 0; i < spawnPositions.length; i++) {
+                if (i != spawnPositions.length - 1 && dir === 1 && freeCells[spawnPositions[i]][1] === 9 || dir === -1 && freeCells[spawnPositions[i]][1] === 0) {
+                    directions.splice(randomDirIndex, 1);
+                    spawnCheck = false;
+                    break;
+                } else {
+                    if (freeCells[spawnPositions[i]] != undefined && freeCells[spawnPositions[i]][2] != -1) {
+                        spawnCheck = true;
+                    } else {
+                        directions.splice(randomDirIndex, 1);
+                        spawnCheck = false;
+                        break;
+                    }
+                }
+            }
+
+            if (spawnCheck) {
+                spawnPositions.forEach(function(p) { spawnOneDeckShip(p); })
             }
             limiter++;
         }
@@ -295,13 +354,12 @@ document.addEventListener("DOMContentLoaded", function() {
     spawnEnemyShips(4, 1);
     spawnEnemyShips(3, 2);
     spawnEnemyShips(2, 3);
-
-    for (let i = 0; i < 100; i++) {
-        if (freeCells[i][2] == -1) {
-            enemyBoardMatrix[freeCells[i][0]][freeCells[i][1]].classList.add("color_red");
-        }
-    }
-
+    spawnEnemyShips(1, 4);
+    // for (let i = 0; i < 100; i++) {
+    //     if (freeCells[i][2] == -1) {
+    //         enemyBoardMatrix[freeCells[i][0]][freeCells[i][1]].classList.add("color_red");
+    //     }
+    // }
 
 
     // for (let i = 0; i < 4; i++) {
@@ -314,6 +372,8 @@ document.addEventListener("DOMContentLoaded", function() {
     //     // console.log(freeCells);
     //     freeCells.splice()
     // }
-    console.log(freeCells);
+    console.log(enemyShipCountGlobal);
 
+    // TODO
+    // click on enemy board shoud add color for ship part & empty
 });
